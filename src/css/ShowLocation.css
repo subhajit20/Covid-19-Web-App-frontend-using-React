@@ -1,0 +1,12 @@
+.showmylocations:hover{
+    cursor: pointer;
+    background-color: #0A2647;
+    color: white;
+}
+.showmylocations{
+    background-color: #FFFFFF;
+    color: black;
+    border-radius: 2px;
+    padding: 10px;
+    border: 1px solid black;
+}
