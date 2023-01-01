@@ -1,11 +1,15 @@
 import React,{useState,useEffect} from 'react';
 import ShowLocation from './ShowLocation';
-import SearchLocation from '../lib/SearchLocation';
+import SearchLocation,{GetCountryImg} from '../lib/SearchLocation';
 
 function Form() {
     const [data,setData] = useState("");
     const [loc,setLoc] = useState([]);
     const [loading,setLoading] = useState(false)
+    const [location,setLocation] = useState({
+        name:"",
+        image:""
+    })
     const locationinput = document.querySelector(".locationinput");
     const showLocations = document.querySelector(".showLocations");
     
@@ -45,10 +49,22 @@ function Form() {
      * 
      * @param {string} loc
      */
-    const getSpecificLocation = (loc) =>{
-        setData(loc);
-        locationinput.value = loc;
+    const getSpecificLocation = async (locdetails,locationname,locationcode) =>{
+        setData(locationname);
+        locationinput.value = locationname;
         showLocations.style.display = "none";
+        const data = await GetCountryImg(locationcode);
+        if(data.data.flagImageUri){
+            setLocation({
+                name:locationname,
+                image:data.data.flagImageUri
+            })
+        }else{
+            setLocation({
+                name:locationname,
+                image:""
+            })
+        }
     }
     
     useEffect(()=>{ 
@@ -62,7 +78,7 @@ function Form() {
             <input type="location" className="form-control locationinput" id="exampleFormControlInput1" placeholder="Search for your location" onChange={oninputChange}/>
             <div className='showLocations' style={{"position":"relative","top":"2px"}}>
                 {!loading ? loc.map((x,index)=>{
-                    return <ShowLocation key={index} searchedLocs={x.name} onClickData={()=> getSpecificLocation(x.name)}/>
+                    return <ShowLocation key={index} searchedLocs={x.name} onClickData={()=> getSpecificLocation(x,x.name,x.code)}/>
                 }) : <ShowLocation  searchedLocs={<div className="spinner-border" role="status">
                                                     <span className="sr-only"></span>
                                                   </div>} />
@@ -70,7 +86,11 @@ function Form() {
             </div>
         </div>
 
-        
+        <div style={{"display":"flex","justifyContent":"space-between","flexWrap":"wrap","alignItems":"center"}}>
+        {
+            location !== null ? <><img src={location.image} alt="country_img" style={{"width":"200px","paddingRight":"1.1rem"}}/><p>Country - <strong>{location.name}</strong></p></>: ""
+        }
+        </div>
     </div>
   )
 }
