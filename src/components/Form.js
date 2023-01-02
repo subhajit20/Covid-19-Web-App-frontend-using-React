@@ -1,15 +1,19 @@
 import React,{useState,useEffect} from 'react';
 import ShowLocation from './ShowLocation';
-import SearchLocation,{GetCountryImg} from '../lib/SearchLocation';
+import SearchLocation,{GetCountryImg,GetCovid19data} from '../lib/SearchLocation';
+import DetailCard from './DetailCard';
 
 function Form() {
     const [data,setData] = useState("");
     const [loc,setLoc] = useState([]);
     const [loading,setLoading] = useState(false)
+    const [flag,setFlag] = useState(false)
     const [location,setLocation] = useState({
         name:"",
         image:""
-    })
+    });
+    const [totalDetails,setDetails] = useState([])
+
     const locationinput = document.querySelector(".locationinput");
     const showLocations = document.querySelector(".showLocations");
     
@@ -20,6 +24,12 @@ function Form() {
     const oninputChange = async (e) =>{
         setData(e.target.value)
         setLoading(true)
+
+        if(data.length == 0){
+            setDetails([]);
+            
+        }else{
+        }
     }
 
     /**
@@ -40,6 +50,7 @@ function Form() {
                 showLocations.style.display = "none";
             }
         }else{
+            setFlag(true)
             setLoading(false)
             showLocations.style.display = "none";
         }
@@ -50,16 +61,29 @@ function Form() {
      * @param {string} loc
      */
     const getSpecificLocation = async (locdetails,locationname,locationcode) =>{
-        setData(locationname);
         locationinput.value = locationname;
+        setData(locationname);
+        console.log(data)
         showLocations.style.display = "none";
-        const data = await GetCountryImg(locationcode);
-        if(data.data.flagImageUri){
+
+        const getImageofcountry = await GetCountryImg(locationcode);
+        const details = await GetCovid19data(locationname);
+        setLoading(true)
+
+
+        if(details.Data.length > 0){
+            setDetails([details.Data[0]])
+            setFlag(true)
+        }
+        if(getImageofcountry.data.flagImageUri){
+            setLoading(false)
+
             setLocation({
                 name:locationname,
-                image:data.data.flagImageUri
+                image:getImageofcountry.data.flagImageUri
             })
         }else{
+            setLoading(false)
             setLocation({
                 name:locationname,
                 image:""
@@ -72,6 +96,7 @@ function Form() {
             LoadLocations();
         }
     },[data])
+ 
   return (  
     <div className='container'>
         <div className="mb-3 mt-5">
@@ -86,11 +111,20 @@ function Form() {
             </div>
         </div>
 
-        <div style={{"display":"flex","justifyContent":"space-between","flexWrap":"wrap","alignItems":"center"}}>
+        <div style={{"display":"flex","justifyContent": loading ? "center" : "space-between","flexWrap":"wrap","alignItems":"center","marginBottom":"1.3rem"}}>
         {
-            location !== null ? <><img src={location.image} alt="country_img" style={{"width":"200px","paddingRight":"1.1rem"}}/><p>Country - <strong>{location.name}</strong></p></>: ""
+            !loading ? <><img src={location.image} alt="country_img" style={{"width":"200px","paddingRight":"1.1rem"}}/><p><i className="fa-solid fa-earth-americas"></i> - <strong>{location.name}</strong></p></> :
+            <div className="spinner-border" role="status">
+                                                    <span className="sr-only"></span>
+                                                  </div>
         }
-        </div>
+        </div>  
+        {/* {data.length > 0} */}
+        {
+            loading ? <div className="spinner-border" role="status">
+            <span className="sr-only"></span>
+          </div> : flag ?  <DetailCard alldetails={totalDetails}/> : ""
+        }
     </div>
   )
 }

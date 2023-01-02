@@ -21,5 +21,19 @@ export async function GetCountryImg(loc) {
   return data
 }
 
+export async function GetCovid19data(name){
+    const res = await fetch("http://127.0.0.1:8000/home/s2/",{
+      method:"POST",
+      headers:{
+        'content-type':"application/json"
+      },
+      body:JSON.stringify({
+        name:name
+      })
+    });
+    const data = await res.json();
+
+    return data
+}
 
 export default SearchLocation
